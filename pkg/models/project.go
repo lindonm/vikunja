@@ -786,6 +786,49 @@ func GetAllParentProjects(s *xorm.Session, projectID int64) (allProjects map[int
 	return
 }
 
+// GetAllChildProjects returns all descendant projects recursively using a CTE
+// Traverses from parent to children (inverse of GetAllParentProjects)
+// Returns map[int64]*Project for efficient lookup
+// Limits recursion depth to 50 levels to prevent infinite loops from circular references
+func GetAllChildProjects(s *xorm.Session, projectID int64) (childProjects map[int64]*Project, err error) {
+	childProjects = make(map[int64]*Project)
+	
+	// Use recursive CTE to traverse from parent to children
+	// The recursion depth is limited to 50 levels to handle circular references
+	err = s.SQL(`WITH RECURSIVE child_projects AS (
+		    SELECT
+		        p.*,
+		        1 as depth
+		    FROM
+		        projects p
+		    WHERE
+		        p.id = ?
+		    UNION ALL
+		    SELECT
+		        p.*,
+		        cp.depth + 1
+		    FROM
+		        projects p
+		            INNER JOIN child_projects cp ON p.parent_project_id = cp.id
+		    WHERE
+		        cp.depth < 50
+		)
+		SELECT DISTINCT id, title, description, identifier, hex_color, owner_id, parent_project_id, 
+		       is_archived, background_file_id, background_blur_hash, position, created, updated
+		FROM child_projects`, projectID).Find(&childProjects)
+	
+	if err != nil {
+		return nil, err
+	}
+	
+	// Log warning if we have a large hierarchy
+	if len(childProjects) > 100 {
+		log.Warningf("Project %d has %d descendant projects, which may impact performance", projectID, len(childProjects))
+	}
+	
+	return childProjects, nil
+}
+
 // addProjectDetails adds owner user objects and project tasks to all projects in the slice
 func addProjectDetails(s *xorm.Session, projects []*Project, a web.Auth) (err error) {
 	if len(projects) == 0 {
