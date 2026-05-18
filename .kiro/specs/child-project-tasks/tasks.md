@@ -28,7 +28,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Use gopter library with minimum 100 iterations
     - _Requirements: 3.1, 3.4, 7.1_
   
-  - [ ]* 1.3 Write unit tests for `GetAllChildProjects`
+  - [x]* 1.3 Write unit tests for `GetAllChildProjects`
     - Test single-level hierarchy (parent with direct children only)
     - Test multi-level hierarchy (grandchildren, great-grandchildren)
     - Test no children case (leaf project)
@@ -111,7 +111,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - _Requirements: 8.1, 8.2, 8.3, 10.1_
 
 - [ ] 5. Backend: Add cache invalidation for hierarchy changes
-  - [ ] 5.1 Implement cache invalidation when project parent_project_id changes
+  - [x] 5.1 Implement cache invalidation when project parent_project_id changes
     - Hook into project update logic in `pkg/models/project.go`
     - Invalidate `GetAllChildProjects` cache for affected projects
     - Use existing Vikunja cache invalidation patterns
@@ -130,7 +130,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test multiple affected projects in hierarchy
     - _Requirements: 7.3, 7.4_
 
-- [-] 6. Checkpoint - Ensure all backend tests pass
+- [x] 6. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Frontend: Add user preference for default toggle state
@@ -139,7 +139,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Default value: `false`
     - _Requirements: 2.1, 2.2_
   
-  - [ ] 7.2 Add preference UI in user settings page (`frontend/src/views/user/settings/`)
+  - [x] 7.2 Add preference UI in user settings page (`frontend/src/views/user/settings/`)
     - Add checkbox labeled "Show tasks in child projects by default"
     - Place in view-related settings section
     - Bind to `userSettings.frontendSettings.showChildProjectTasksByDefault`
@@ -160,7 +160,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - _Requirements: 2.2, 2.3_
 
 - [ ] 8. Frontend: Implement project view toggle component
-  - [ ] 8.1 Add toggle control to project view components
+  - [x] 8.1 Add toggle control to project view components
     - Add fancycheckbox component labeled "Show tasks in child projects"
     - Place alongside existing "Show tasks without a date" toggle
     - Initialize from `userSettings.frontendSettings.showChildProjectTasksByDefault`
@@ -168,7 +168,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Apply to all view types: List (`frontend/src/views/project/ProjectList.vue`), Kanban, Gantt, Table
     - _Requirements: 1.1, 1.4, 1.5, 2.4, 5.1, 5.2, 5.3, 5.4_
   
-  - [ ] 8.2 Wire toggle to task collection API
+  - [x] 8.2 Wire toggle to task collection API
     - Pass toggle state to task collection API via `include_child_tasks` query parameter
     - Reload tasks when toggle state changes
     - Follow existing API request patterns
@@ -180,8 +180,8 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test toggle visibility in all view types
     - _Requirements: 1.1, 1.4, 2.4_
 
-- [ ] 9. Frontend: Add parentProject filter to saved filter UI
-  - [ ] 9.1 Add "Parent Project" filter option to filter editor (`frontend/src/components/tasks/filters/`)
+- [x] 9. Frontend: Add parentProject filter to saved filter UI
+  - [x] 9.1 Add "Parent Project" filter option to filter editor (`frontend/src/components/tasks/filters/`)
     - Add filter option with name "parentProject"
     - Description: "The project the task belongs to and all tasks from all descendant child projects"
     - Use existing project picker component for project selection
@@ -194,8 +194,8 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test filter value mapping to API request
     - _Requirements: 4.1, 4.2_
 
-- [ ] 10. Frontend: Implement breadcrumb navigation component
-  - [ ] 10.1 Create breadcrumb navigation component (`frontend/src/components/project/`)
+- [x] 10. Frontend: Implement breadcrumb navigation component
+  - [x] 10.1 Create breadcrumb navigation component (`frontend/src/components/project/`)
     - Fetch parent chain using existing backend API (similar to `GetAllParentProjects`)
     - Display as: "Root Project > Parent Project > Current Project"
     - Make each project name clickable (navigate to project view)
@@ -210,8 +210,8 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test display for multi-level hierarchies
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 11. Frontend: Enhance task display with project indicators
-  - [ ] 11.1 Modify task list/card components to show project name for child tasks
+- [x] 11. Frontend: Enhance task display with project indicators
+  - [x] 11.1 Modify task list/card components to show project name for child tasks
     - Display project name/indicator for tasks from child projects
     - Use existing project display patterns
     - Ensure visual distinction from parent project tasks
@@ -224,11 +224,11 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test display in all view types
     - _Requirements: 5.5_
 
-- [ ] 12. Checkpoint - Ensure all frontend tests pass
+- [x] 12. Checkpoint - Ensure all frontend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 13. Add translations for new UI elements
-  - [ ] 13.1 Add translation keys to `frontend/src/i18n/lang/en.json`
+- [x] 13. Add translations for new UI elements
+  - [x] 13.1 Add translation keys to `frontend/src/i18n/lang/en.json`
     - Add `project.show_child_project_tasks`: "Show tasks in child projects"
     - Add `project.show_child_project_tasks_description`: "Include tasks from all descendant child projects"
     - Add `user.settings.show_child_project_tasks_by_default`: "Show tasks in child projects by default"
@@ -238,7 +238,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - _Requirements: All UI-related requirements_
 
 - [ ] 14. Integration testing and wiring
-  - [ ] 14.1 Test end-to-end flow: toggle in project view
+  - [~] 14.1 Test end-to-end flow: toggle in project view
     - Create test project hierarchy (parent with multiple child levels)
     - Verify toggle appears in all view types
     - Verify toggle off shows only parent tasks
@@ -246,7 +246,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify permission filtering (create child project user cannot access)
     - _Requirements: 1.1, 1.2, 1.3, 5.1, 5.2, 5.3, 5.4, 10.1, 10.2_
   
-  - [ ] 14.2 Test end-to-end flow: user preference
+  - [~] 14.2 Test end-to-end flow: user preference
     - Set preference to true in settings
     - Navigate to project view
     - Verify toggle initializes to enabled state
@@ -255,14 +255,14 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify toggle initializes to disabled state
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
   
-  - [ ] 14.3 Test end-to-end flow: saved filter with parentProject
+  - [~] 14.3 Test end-to-end flow: saved filter with parentProject
     - Create saved filter with parentProject field
     - Verify filter includes parent + all descendant tasks
     - Combine with other filters (e.g., assignee, due date)
     - Verify correct AND/OR logic application
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
   
-  - [ ] 14.4 Test end-to-end flow: breadcrumb navigation
+  - [~] 14.4 Test end-to-end flow: breadcrumb navigation
     - Navigate to child project (2+ levels deep)
     - Verify breadcrumb shows full parent chain
     - Click on parent project name in breadcrumb
@@ -295,7 +295,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify no timeout or crash
     - _Requirements: 9.3_
 
-- [ ] 16. Final checkpoint - Complete feature validation
+- [~] 16. Final checkpoint - Complete feature validation
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

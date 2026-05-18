@@ -821,7 +821,7 @@ func TestGetAllChildProjects(t *testing.T) {
 
 		childProjects, err := GetAllChildProjects(s, 999999)
 		require.NoError(t, err, "Should not error for nonexistent project")
-		assert.Len(t, childProjects, 0, "Should return empty map for nonexistent project")
+		assert.Empty(t, childProjects, "Should return empty map for nonexistent project")
 	})
 
 	t.Run("multiple children at same level", func(t *testing.T) {

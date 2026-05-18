@@ -52,7 +52,7 @@ type TaskCollection struct {
 	FilterIncludeNulls bool `query:"filter_include_nulls" json:"filter_include_nulls"`
 
 	// If set to true, tasks from all descendant child projects will be included
-	IncludeChildTasks bool `query:"include_child_tasks" json:"include_child_tasks"`
+	IncludeChildTasks bool `query:"include_child_tasks" json:"include_child_tasks,omitempty"`
 	// Populated from parentProject filter parsing - contains parent project IDs to expand
 	ParentProjectIDs []int64 `json:"-"`
 

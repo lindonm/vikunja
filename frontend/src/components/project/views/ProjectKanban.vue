@@ -14,6 +14,14 @@
 					:project-id="projectId"
 					@update:modelValue="updateFilters"
 				/>
+				<XButton
+					v-if="!isSavedFilter(project)"
+					variant="secondary"
+					:class="{'is-active': params.include_child_tasks}"
+					:title="$t('project.show_child_project_tasks')"
+					icon="sitemap"
+					@click="params.include_child_tasks = !params.include_child_tasks; updateFilters(params)"
+				/>
 			</div>
 		</template>
 
@@ -406,6 +414,7 @@ const params = ref<TaskFilterParams>({
 	filter: '',
 	filter_include_nulls: false,
 	s: '',
+	include_child_tasks: authStore.settings.frontendSettings.showChildProjectTasksByDefault ?? false,
 })
 
 watch([filter, s], ([filterValue, sValue]) => {

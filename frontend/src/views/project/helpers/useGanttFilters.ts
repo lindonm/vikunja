@@ -2,6 +2,7 @@ import {watch, type Ref} from 'vue'
 import type {RouteLocationNormalized, RouteLocationRaw, LocationQueryRaw} from 'vue-router'
 
 import {useViewFiltersStore} from '@/stores/viewFilters'
+import {useAuthStore} from '@/stores/auth'
 
 import {isoToKebabDate} from '@/helpers/time/isoToKebabDate'
 import {parseDateProp} from '@/helpers/time/parseDateProp'
@@ -23,9 +24,11 @@ export interface GanttFilters {
 	dateFrom: DateISO
 	dateTo: DateISO
 	showTasksWithoutDates: boolean
+	includeChildTasks: boolean
 }
 
 const DEFAULT_SHOW_TASKS_WITHOUT_DATES = false
+const DEFAULT_INCLUDE_CHILD_TASKS = false
 
 const DEFAULT_DATEFROM_DAY_OFFSET = -15
 const DEFAULT_DATETO_DAY_OFFSET = +55
@@ -49,14 +52,19 @@ function ganttRouteToFilters(route: Partial<RouteLocationNormalized>): GanttFilt
 		dateFrom: parseDateProp(ganttRoute.query?.dateFrom as DateKebab) || getDefaultDateFrom(),
 		dateTo: parseDateProp(ganttRoute.query?.dateTo as DateKebab) || getDefaultDateTo(),
 		showTasksWithoutDates: parseBooleanProp(ganttRoute.query?.showTasksWithoutDates as string) || DEFAULT_SHOW_TASKS_WITHOUT_DATES,
+		includeChildTasks: parseBooleanProp(ganttRoute.query?.includeChildTasks as string) || DEFAULT_INCLUDE_CHILD_TASKS,
 	}
 }
 
 function ganttGetDefaultFilters(route: Partial<RouteLocationNormalized>): GanttFilters {
-	return ganttRouteToFilters({params: {
-		projectId: route.params?.projectId as string,
-		viewId: route.params?.viewId as string,
-	}})
+	const authStore = useAuthStore()
+	return {
+		...ganttRouteToFilters({params: {
+			projectId: route.params?.projectId as string,
+			viewId: route.params?.viewId as string,
+		}}),
+		includeChildTasks: authStore.settings.frontendSettings.showChildProjectTasksByDefault ?? false,
+	}
 }
 
 // FIXME: use zod for this
@@ -74,6 +82,10 @@ function ganttFiltersToRoute(filters: GanttFilters): RouteLocationRaw {
 
 	if (filters.showTasksWithoutDates) {
 		query.showTasksWithoutDates = String(filters.showTasksWithoutDates)
+	}
+
+	if (filters.includeChildTasks) {
+		query.includeChildTasks = String(filters.includeChildTasks)
 	}
 
 	return {
@@ -100,6 +112,7 @@ function ganttFiltersToApiParams(filters: GanttFilters): TaskFilterParams {
 			'(start_date <= "' + dateFrom + '" && end_date >= "' + dateTo + '")' +
 			')',
 		filter_include_nulls: filters.showTasksWithoutDates,
+		include_child_tasks: filters.includeChildTasks,
 		expand: 'subtasks',
 	}
 }

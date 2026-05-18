@@ -81,6 +81,14 @@
 					:project-id="projectId"
 					@update:modelValue="taskList.loadTasks()"
 				/>
+				<XButton
+					v-if="!isSavedFilter({id: projectId})"
+					variant="secondary"
+					:class="{'is-active': params.include_child_tasks}"
+					:title="$t('project.show_child_project_tasks')"
+					icon="sitemap"
+					@click="params.include_child_tasks = !params.include_child_tasks"
+				/>
 			</div>
 		</template>
 

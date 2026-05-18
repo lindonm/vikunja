@@ -27,6 +27,7 @@ import (
 	"code.vikunja.io/api/pkg/events"
 	"code.vikunja.io/api/pkg/files"
 	"code.vikunja.io/api/pkg/log"
+	"code.vikunja.io/api/pkg/modules/keyvalue"
 	"code.vikunja.io/api/pkg/user"
 	"code.vikunja.io/api/pkg/utils"
 	"code.vikunja.io/api/pkg/web"
@@ -790,12 +791,16 @@ func GetAllParentProjects(s *xorm.Session, projectID int64) (allProjects map[int
 // Traverses from parent to children (inverse of GetAllParentProjects)
 // Returns map[int64]*Project for efficient lookup
 // Limits recursion depth to 50 levels to prevent infinite loops from circular references
+// Results are cached in the keyvalue store; call invalidateChildProjectsCache to bust the cache.
 func GetAllChildProjects(s *xorm.Session, projectID int64) (childProjects map[int64]*Project, err error) {
-	childProjects = make(map[int64]*Project)
-	
-	// Use recursive CTE to traverse from parent to children
-	// The recursion depth is limited to 50 levels to handle circular references
-	err = s.SQL(`WITH RECURSIVE child_projects AS (
+	cacheKey := fmt.Sprintf("child_projects_%d", projectID)
+
+	return keyvalue.RememberValue(cacheKey, func() (map[int64]*Project, error) {
+		result := make(map[int64]*Project)
+
+		// Use recursive CTE to traverse from parent to children
+		// The recursion depth is limited to 50 levels to handle circular references
+		if err := s.SQL(`WITH RECURSIVE child_projects AS (
 		    SELECT
 		        p.*,
 		        1 as depth
@@ -813,20 +818,29 @@ func GetAllChildProjects(s *xorm.Session, projectID int64) (childProjects map[in
 		    WHERE
 		        cp.depth < 50
 		)
-		SELECT DISTINCT id, title, description, identifier, hex_color, owner_id, parent_project_id, 
+		SELECT DISTINCT id, title, description, identifier, hex_color, owner_id, parent_project_id,
 		       is_archived, background_file_id, background_blur_hash, position, created, updated
-		FROM child_projects`, projectID).Find(&childProjects)
-	
-	if err != nil {
-		return nil, err
+		FROM child_projects`, projectID).Find(&result); err != nil {
+			return nil, err
+		}
+
+		// Log warning if we have a large hierarchy
+		if len(result) > 100 {
+			log.Warningf("Project %d has %d descendant projects, which may impact performance", projectID, len(result))
+		}
+
+		return result, nil
+	})
+}
+
+// invalidateChildProjectsCache removes the cached child-project list for the given project IDs.
+// Call this whenever a project's parent_project_id changes so that stale hierarchy data is not served.
+func invalidateChildProjectsCache(projectIDs ...int64) {
+	for _, id := range projectIDs {
+		if err := keyvalue.Del(fmt.Sprintf("child_projects_%d", id)); err != nil {
+			log.Warningf("Could not invalidate child projects cache for project %d: %s", id, err)
+		}
 	}
-	
-	// Log warning if we have a large hierarchy
-	if len(childProjects) > 100 {
-		log.Warningf("Project %d has %d descendant projects, which may impact performance", projectID, len(childProjects))
-	}
-	
-	return childProjects, nil
 }
 
 // addProjectDetails adds owner user objects and project tasks to all projects in the slice
@@ -1141,6 +1155,12 @@ func UpdateProject(s *xorm.Session, project *Project, auth web.Auth, updateProje
 		return
 	}
 
+	// Fetch the current stored state so we can detect parent_project_id changes for cache invalidation.
+	storedProject, err := GetProjectSimpleByID(s, project.ID)
+	if err != nil {
+		return err
+	}
+
 	// GHSA-2vq4-854f-5c72 / CVE-2026-35595: the recursive permission CTE
 	// cascades Admin from any owned ancestor, so moving a shared child
 	// under an attacker-owned root grants Admin on the child. Require
@@ -1151,10 +1171,6 @@ func UpdateProject(s *xorm.Session, project *Project, auth web.Auth, updateProje
 	// indistinguishable from an explicit 0. Detach-to-root is therefore
 	// out of scope here — a proper fix needs a pointer field.
 	if project.ParentProjectID > 0 {
-		storedProject, err := GetProjectSimpleByID(s, project.ID)
-		if err != nil {
-			return err
-		}
 		if project.ParentProjectID != storedProject.ParentProjectID {
 			canAdminMoved, err := project.IsAdmin(s, auth)
 			if err != nil {
@@ -1239,6 +1255,19 @@ func UpdateProject(s *xorm.Session, project *Project, auth web.Auth, updateProje
 		Update(project)
 	if err != nil {
 		return err
+	}
+
+	// Invalidate the child-projects cache for any project whose hierarchy may have changed.
+	// This covers: the project itself, its old parent (if any), and its new parent (if any).
+	if project.ParentProjectID != storedProject.ParentProjectID {
+		idsToInvalidate := []int64{project.ID}
+		if storedProject.ParentProjectID != 0 {
+			idsToInvalidate = append(idsToInvalidate, storedProject.ParentProjectID)
+		}
+		if project.ParentProjectID != 0 {
+			idsToInvalidate = append(idsToInvalidate, project.ParentProjectID)
+		}
+		invalidateChildProjectsCache(idsToInvalidate...)
 	}
 
 	events.DispatchOnCommit(s, &ProjectUpdatedEvent{
