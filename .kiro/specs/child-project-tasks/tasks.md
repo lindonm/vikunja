@@ -68,7 +68,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Use gopter library with minimum 100 iterations
     - _Requirements: 10.1, 10.2_
   
-  - [ ]* 2.6 Write unit tests for task collection with child inclusion
+  - [x]* 2.6 Write unit tests for task collection with child inclusion
     - Test task retrieval with `IncludeChildTasks=false` (only direct tasks)
     - Test task retrieval with `IncludeChildTasks=true` (includes descendants)
     - Test permission filtering (user lacks permission on some children)
@@ -89,7 +89,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Use gopter library with minimum 100 iterations
     - _Requirements: 4.5_
   
-  - [ ]* 3.3 Write unit tests for parentProject filter parsing
+  - [x]* 3.3 Write unit tests for parentProject filter parsing
     - Test single project ID parsing
     - Test multiple project IDs parsing (IN clause)
     - Test combination with other filters (AND/OR logic)
@@ -110,7 +110,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test saved filter with parentProject field
     - _Requirements: 8.1, 8.2, 8.3, 10.1_
 
-- [ ] 5. Backend: Add cache invalidation for hierarchy changes
+- [x] 5. Backend: Add cache invalidation for hierarchy changes
   - [x] 5.1 Implement cache invalidation when project parent_project_id changes
     - Hook into project update logic in `pkg/models/project.go`
     - Invalidate `GetAllChildProjects` cache for affected projects
@@ -133,8 +133,8 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
 - [x] 6. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Frontend: Add user preference for default toggle state
-  - [ ] 7.1 Update `IFrontendSettings` interface in `frontend/src/modelTypes/IUserSettings.ts`
+- [x] 7. Frontend: Add user preference for default toggle state
+  - [x] 7.1 Update `IFrontendSettings` interface in `frontend/src/modelTypes/IUserSettings.ts`
     - Add `showChildProjectTasksByDefault: boolean` field
     - Default value: `false`
     - _Requirements: 2.1, 2.2_
@@ -159,7 +159,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test preference binding in settings UI
     - _Requirements: 2.2, 2.3_
 
-- [ ] 8. Frontend: Implement project view toggle component
+- [x] 8. Frontend: Implement project view toggle component
   - [x] 8.1 Add toggle control to project view components
     - Add fancycheckbox component labeled "Show tasks in child projects"
     - Place alongside existing "Show tasks without a date" toggle
@@ -237,8 +237,8 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Add `filters.parentProject_description`: "The project the task belongs to and all tasks from all descendant child projects"
     - _Requirements: All UI-related requirements_
 
-- [ ] 14. Integration testing and wiring
-  - [~] 14.1 Test end-to-end flow: toggle in project view
+- [x] 14. Integration testing and wiring
+  - [x] 14.1 Test end-to-end flow: toggle in project view
     - Create test project hierarchy (parent with multiple child levels)
     - Verify toggle appears in all view types
     - Verify toggle off shows only parent tasks
@@ -246,7 +246,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify permission filtering (create child project user cannot access)
     - _Requirements: 1.1, 1.2, 1.3, 5.1, 5.2, 5.3, 5.4, 10.1, 10.2_
   
-  - [~] 14.2 Test end-to-end flow: user preference
+  - [x] 14.2 Test end-to-end flow: user preference
     - Set preference to true in settings
     - Navigate to project view
     - Verify toggle initializes to enabled state
@@ -255,14 +255,14 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify toggle initializes to disabled state
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
   
-  - [~] 14.3 Test end-to-end flow: saved filter with parentProject
+  - [x] 14.3 Test end-to-end flow: saved filter with parentProject
     - Create saved filter with parentProject field
     - Verify filter includes parent + all descendant tasks
     - Combine with other filters (e.g., assignee, due date)
     - Verify correct AND/OR logic application
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
   
-  - [~] 14.4 Test end-to-end flow: breadcrumb navigation
+  - [x] 14.4 Test end-to-end flow: breadcrumb navigation
     - Navigate to child project (2+ levels deep)
     - Verify breadcrumb shows full parent chain
     - Click on parent project name in breadcrumb
@@ -280,7 +280,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Test permission enforcement (user cannot see restricted child tasks)
     - _Requirements: All requirements_
 
-- [ ] 15. Performance testing and optimization
+- [x] 15. Performance testing and optimization
   - [ ]* 15.1 Benchmark hierarchy resolution performance
     - Benchmark `GetAllChildProjects` with depth 10 hierarchy
     - Benchmark task retrieval with child inclusion (100 projects)
@@ -295,7 +295,7 @@ The implementation follows existing Vikunja patterns strictly: recursive CTEs fo
     - Verify no timeout or crash
     - _Requirements: 9.3_
 
-- [~] 16. Final checkpoint - Complete feature validation
+- [ ] 16. Final checkpoint - Complete feature validation
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
