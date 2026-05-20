@@ -567,7 +567,8 @@
       "updateSuccess": "The view was updated successfully."
     },
     "show_child_project_tasks": "Show tasks in child projects",
-    "show_child_project_tasks_description": "Include tasks from all descendant child projects"
+    "show_child_project_tasks_description": "Include tasks from all descendant child projects",
+    "child_project_tasks_bucket": "Child Project Tasks"
   },
   "filters": {
     "title": "Filters",

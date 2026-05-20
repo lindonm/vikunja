@@ -21,7 +21,7 @@
 				v-if="isExternalUser"
 				class="help"
 			>
-				{{ $t('user.settings.general.externalUserNameChange', {provider: authStore.info.authProvider}) }}
+				{{ $t('user.settings.general.externalUserNameChange', {provider: authStore.info?.authProvider ?? ''}) }}
 			</p>
 			<FormField
 				:label="$t('user.settings.general.defaultProject')"
@@ -537,7 +537,7 @@ const {
 	timezoneObject,
 } = useAvailableTimezones(settings)
 
-const isExternalUser = computed(() => !authStore.info.isLocalUser)
+const isExternalUser = computed(() => !authStore.info?.isLocalUser)
 
 watch(
 	() => authStore.settings,

@@ -81,14 +81,13 @@
 					:project-id="projectId"
 					@update:modelValue="taskList.loadTasks()"
 				/>
-				<XButton
+				<FancyCheckbox
 					v-if="!isSavedFilter({id: projectId})"
-					variant="secondary"
-					:class="{'is-active': params.include_child_tasks}"
-					:title="$t('project.show_child_project_tasks')"
-					icon="sitemap"
-					@click="params.include_child_tasks = !params.include_child_tasks"
-				/>
+					v-model="params.include_child_tasks"
+					is-block
+				>
+					{{ $t('project.show_child_project_tasks') }}
+				</FancyCheckbox>
 			</div>
 		</template>
 

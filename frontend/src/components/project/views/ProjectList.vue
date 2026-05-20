@@ -17,14 +17,13 @@
 					:project-id="projectId"
 					@update:modelValue="loadTasks()"
 				/>
-				<XButton
+				<FancyCheckbox
 					v-if="!isSavedFilter(project)"
-					variant="secondary"
-					:class="{'is-active': params.include_child_tasks}"
-					:title="$t('project.show_child_project_tasks')"
-					icon="sitemap"
-					@click="params.include_child_tasks = !params.include_child_tasks"
-				/>
+					v-model="params.include_child_tasks"
+					is-block
+				>
+					{{ $t('project.show_child_project_tasks') }}
+				</FancyCheckbox>
 			</div>
 		</template>
 
@@ -117,6 +116,7 @@ import ButtonLink from '@/components/misc/ButtonLink.vue'
 import AddTask from '@/components/tasks/AddTask.vue'
 import SingleTaskInProject from '@/components/tasks/partials/SingleTaskInProject.vue'
 import FilterPopup from '@/components/project/partials/FilterPopup.vue'
+import FancyCheckbox from '@/components/input/FancyCheckbox.vue'
 import Nothing from '@/components/misc/Nothing.vue'
 import Pagination from '@/components/misc/Pagination.vue'
 import SortPopup from '@/components/project/partials/SortPopup.vue'

@@ -46,25 +46,25 @@ function getDefaultDateTo() {
 // FIXME: use zod for this
 function ganttRouteToFilters(route: Partial<RouteLocationNormalized>): GanttFilters {
 	const ganttRoute = route
+	const authStore = useAuthStore()
+	const defaultIncludeChildTasks = 'includeChildTasks' in (ganttRoute.query ?? {})
+		? parseBooleanProp(ganttRoute.query?.includeChildTasks as string)
+		: (authStore.settings.frontendSettings.showChildProjectTasksByDefault ?? DEFAULT_INCLUDE_CHILD_TASKS)
 	return {
 		projectId: Number(ganttRoute.params?.projectId),
 		viewId: Number(ganttRoute.params?.viewId),
 		dateFrom: parseDateProp(ganttRoute.query?.dateFrom as DateKebab) || getDefaultDateFrom(),
 		dateTo: parseDateProp(ganttRoute.query?.dateTo as DateKebab) || getDefaultDateTo(),
 		showTasksWithoutDates: parseBooleanProp(ganttRoute.query?.showTasksWithoutDates as string) || DEFAULT_SHOW_TASKS_WITHOUT_DATES,
-		includeChildTasks: parseBooleanProp(ganttRoute.query?.includeChildTasks as string) || DEFAULT_INCLUDE_CHILD_TASKS,
+		includeChildTasks: defaultIncludeChildTasks,
 	}
 }
 
 function ganttGetDefaultFilters(route: Partial<RouteLocationNormalized>): GanttFilters {
-	const authStore = useAuthStore()
-	return {
-		...ganttRouteToFilters({params: {
-			projectId: route.params?.projectId as string,
-			viewId: route.params?.viewId as string,
-		}}),
-		includeChildTasks: authStore.settings.frontendSettings.showChildProjectTasksByDefault ?? false,
-	}
+	return ganttRouteToFilters({params: {
+		projectId: route.params?.projectId as string,
+		viewId: route.params?.viewId as string,
+	}})
 }
 
 // FIXME: use zod for this

@@ -843,6 +843,26 @@ func invalidateChildProjectsCache(projectIDs ...int64) {
 	}
 }
 
+// invalidateChildProjectsCacheForAncestors walks up the project hierarchy from the given project ID
+// and invalidates the child-projects cache for every ancestor (including the project itself).
+// This is necessary because adding/removing a descendant at any depth invalidates the cached
+// child list of every ancestor above it.
+func invalidateChildProjectsCacheForAncestors(s *xorm.Session, projectID int64) {
+	ancestors, err := GetAllParentProjects(s, projectID)
+	if err != nil {
+		log.Warningf("Could not get parent projects for cache invalidation of project %d: %s", projectID, err)
+		// Still invalidate the project itself
+		invalidateChildProjectsCache(projectID)
+		return
+	}
+	ids := make([]int64, 0, len(ancestors)+1)
+	ids = append(ids, projectID)
+	for id := range ancestors {
+		ids = append(ids, id)
+	}
+	invalidateChildProjectsCache(ids...)
+}
+
 // addProjectDetails adds owner user objects and project tasks to all projects in the slice
 func addProjectDetails(s *xorm.Session, projects []*Project, a web.Auth) (err error) {
 	if len(projects) == 0 {
@@ -1112,6 +1132,12 @@ func CreateProject(s *xorm.Session, project *Project, auth web.Auth, createBackl
 		Project: project,
 		Doer:    doer,
 	})
+
+	// Invalidate the child-projects cache for all ancestors so they reflect the new child.
+	if project.ParentProjectID != 0 {
+		invalidateChildProjectsCacheForAncestors(s, project.ParentProjectID)
+	}
+
 	return nil
 }
 
@@ -1258,16 +1284,15 @@ func UpdateProject(s *xorm.Session, project *Project, auth web.Auth, updateProje
 	}
 
 	// Invalidate the child-projects cache for any project whose hierarchy may have changed.
-	// This covers: the project itself, its old parent (if any), and its new parent (if any).
+	// Walk up all ancestors of both the old and new parent so every level is refreshed.
 	if project.ParentProjectID != storedProject.ParentProjectID {
-		idsToInvalidate := []int64{project.ID}
+		invalidateChildProjectsCacheForAncestors(s, project.ID)
 		if storedProject.ParentProjectID != 0 {
-			idsToInvalidate = append(idsToInvalidate, storedProject.ParentProjectID)
+			invalidateChildProjectsCacheForAncestors(s, storedProject.ParentProjectID)
 		}
 		if project.ParentProjectID != 0 {
-			idsToInvalidate = append(idsToInvalidate, project.ParentProjectID)
+			invalidateChildProjectsCacheForAncestors(s, project.ParentProjectID)
 		}
-		invalidateChildProjectsCache(idsToInvalidate...)
 	}
 
 	events.DispatchOnCommit(s, &ProjectUpdatedEvent{
