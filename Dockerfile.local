@@ -1,0 +1,22 @@
+# Dockerfile.local - for local dev/test builds only
+# Usage:
+#   go build -o vikunja-local .                          (from repo root)
+#   cd frontend && pnpm build && cd ..
+#   cp -r frontend/dist /tmp/vikunja-frontend-dist
+#   docker build -f Dockerfile.local -t vikunja-dev:local .
+
+# Runtime image - uses pre-built binary and frontend
+FROM alpine:3.21
+RUN apk add --no-cache ca-certificates tzdata
+WORKDIR /app/vikunja
+# Copy the pre-built binary (build it first with: CGO_ENABLED=0 GOOS=linux go build -o vikunja-local .)
+COPY vikunja-local vikunja
+# Copy the pre-built frontend from temp location (outside .dockerignore)
+# Run: cp -r frontend/dist /tmp/vikunja-frontend-dist  before building
+COPY vikunja-frontend-dist ./frontend/dist
+RUN addgroup -S -g 1000 vikunja && adduser -S -u 1000 vikunja -G vikunja && \
+    chown -R 1000:1000 /app/vikunja
+USER 1000
+EXPOSE 3456
+ENV VIKUNJA_SERVICE_ROOTPATH=/app/vikunja/
+ENTRYPOINT ["/app/vikunja/vikunja"]
